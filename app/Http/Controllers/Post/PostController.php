@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Post;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,7 @@ class PostController extends Controller
 
         $response = [
             'success' => true,
-            'data' => $post,
+            'data' => PostResource::collection($post),
             'message' => 'Post Successfuly Retrieved',
         ];
         return response()->json($response, 200);
