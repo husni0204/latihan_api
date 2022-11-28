@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::resource('post', PostController::class);
+Route::resource('post', PostController::class)->except([
+    'create', 'edit'
+]);
 // Route::post('lihat', PostController::class, 'index');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

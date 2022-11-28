@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
 {
@@ -18,12 +19,7 @@ class PostController extends Controller
     {
         $post = Post::all();
 
-        $response = [
-            'success' => true,
-            'data' => PostResource::collection($post),
-            'message' => 'Post Successfuly Retrieved',
-        ];
-        return response()->json($response, 200);
+        return $this->successResponse(PostResource::collection($post), 'Post Successfuly Retrieved');
     }
 
     /**
@@ -44,7 +40,21 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'title' => 'required',
+            'content' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+
+            return $this->errorResponse('Validation Error', $validator->errors());
+        }
+
+        $post = Post::create($input);
+
+        return $this->successResponse(new PostResource($post), 'Post Successfully Created');
     }
 
     /**
@@ -55,7 +65,13 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        //
+        $post = Post::find($id);
+
+        if (is_null($post)) {
+            return $this->errorResponse('Data Post Not Found');
+        }
+
+        return $this->successResponse(new PostResource($post), 'Post Successfully Retrieved');
     }
 
     /**
@@ -76,9 +92,24 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Post $post)
     {
-        //
+        $input = $request->all();
+
+        $validator = Validator::make($input, [
+            'title' => 'required',
+            'content' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return $this->errorResponse('Validation Error', $validator->errors());
+        }
+
+        $post->title = $input['title'];
+        $post->content = $input['content'];
+        $post->save();
+
+        return $this->successResponse(new PostResource($post), 'Post Successfully Updated');
     }
 
     /**
@@ -87,8 +118,10 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Post $post)
     {
-        //
+        $post->delete();
+
+        return $this->successResponse([], 'Post Successfully Deleted');
     }
 }
